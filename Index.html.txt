@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>百家樂算牌（離線版）</title>
+<style>
+body {
+  font-family: -apple-system, BlinkMacSystemFont;
+  background: #f5f5f5;
+  margin: 0;
+  padding: 16px;
+}
+h1 { text-align: center; }
+button {
+  padding: 12px;
+  margin: 4px;
+  font-size: 18px;
+}
+.panel {
+  background: #fff;
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(6, 32px);
+  gap: 4px;
+}
+.cell {
+  width: 32px;
+  height: 32px;
+  text-align: center;
+  line-height: 32px;
+  border-radius: 4px;
+  background: #ddd;
+}
+.banker { background: #ffb3b3; }
+.player { background: #b3d9ff; }
+.tie { background: #b3ffcc; }
+</style>
+</head>
+
+<body>
+
+<h1>百家樂算牌（本機）</h1>
+
+<div class="panel">
+  <button onclick="addResult('B')">莊</button>
+  <button onclick="addResult('P')">閒</button>
+  <button onclick="addResult('T')">和</button>
+  <button onclick="reset()">清除</button>
+</div>
+
+<div class="panel" id="stats"></div>
+
+<div class="panel">
+  <h3>下注建議</h3>
+  <div id="suggestion"></div>
+</div>
+
+<div class="panel">
+  <h3>珠盤路</h3>
+  <div class="grid" id="bead"></div>
+</div>
+
+<script>
+let results = [];
+
+function addResult(r) {
+  results.push(r);
+  render();
+}
+
+function reset() {
+  if (confirm("確定清除所有紀錄？")) {
+    results = [];
+    render();
+  }
+}
+
+function render() {
+  renderStats();
+  renderBead();
+  renderSuggestion();
+}
+
+function renderStats() {
+  let b = results.filter(r => r === 'B').length;
+  let p = results.filter(r => r === 'P').length;
+  let t = results.filter(r => r === 'T').length;
+  let total = results.length;
+
+  let bRate = total ? (b / total * 100).toFixed(1) : 0;
+  let pRate = total ? (p / total * 100).toFixed(1) : 0;
+
+  document.getElementById("stats").innerHTML = `
+    <b>統計</b><br>
+    莊：${b}（${bRate}%）<br>
+    閒：${p}（${pRate}%）<br>
+    和：${t}<br>
+    總局數：${total}
+  `;
+}
+
+function renderBead() {
+  let html = "";
+  results.forEach(r => {
+    let cls = r === 'B' ? 'banker' : r === 'P' ? 'player' : 'tie';
+    let txt = r === 'B' ? '莊' : r === 'P' ? '閒' : '和';
+    html += `<div class="cell ${cls}">${txt}</div>`;
+  });
+  document.getElementById("bead").innerHTML = html;
+}
+
+// 簡化真算牌（8 副牌）
+function renderSuggestion() {
+  let b = results.filter(r => r === 'B').length;
+  let p = results.filter(r => r === 'P').length;
+
+  let suggestion = "無明顯優勢";
+
+  if (b > p + 3) suggestion = "偏莊（僅供參考）";
+  else if (p > b + 3) suggestion = "偏閒（僅供參考）";
+
+  document.getElementById("suggestion").innerText = suggestion;
+}
+
+render();
+</script>
+
+</body>
+</html>
